@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>✨ Sticker Studio</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+</head>
+<body class="theme-pink" id="app-body">
+
+  <!-- ✨ Floating Background Layer -->
+  <div class="bg-floaties" id="bgFloaties"></div>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- 🎀 Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">🎀</span>
+      <span class="logo-text">Sticker Studio</span>
+      <span class="logo-sparkle">✨</span>
+    </div>
+    <p class="tagline">turn your pics into the cutest stickers ever~</p>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+      <span class="theme-label">vibe ✨</span>
+      <div class="theme-dots">
+        <button class="dot dot-pink active" data-theme="theme-pink" title="Pink ♡" onclick="switchTheme('theme-pink', this)"></button>
+        <button class="dot dot-purple" data-theme="theme-purple" title="Purple ✦" onclick="switchTheme('theme-purple', this)"></button>
+        <button class="dot dot-sky" data-theme="theme-sky" title="Sky 🫧" onclick="switchTheme('theme-sky', this)"></button>
+        <button class="dot dot-sunset" data-theme="theme-sunset" title="Sunset 🌸" onclick="switchTheme('theme-sunset', this)"></button>
+        <button class="dot dot-matcha" data-theme="theme-matcha" title="Matcha 🍵" onclick="switchTheme('theme-matcha', this)"></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🌸 Main Content -->
+  <main class="main-wrap">
+
+    <!-- Left Panel: Controls -->
+    <section class="panel panel-left">
+      <div class="panel-title">
+        <span>upload & customize</span> <span class="emoji-spin">🌟</span>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="upload-zone" id="uploadZone"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)"
+           onclick="document.getElementById('fileInput').click()">
+        <div class="upload-inner" id="uploadInner">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-title">drop your photo here~</div>
+          <div class="upload-sub">or click to choose ♡</div>
+          <div class="upload-hint">PNG, JPG, WEBP supported</div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFileSelect(event)" />
+      </div>
+
+      <!-- Image Preview -->
+      <div class="preview-box" id="previewBox" style="display:none">
+        <div class="preview-label">✨ your photo</div>
+        <img id="previewImg" src="" alt="preview" class="preview-img" />
+        <button class="btn-tiny" onclick="clearImage()">✕ remove</button>
+      </div>
+
+      <!-- Controls Card -->
+      <div class="controls-card">
+
+        <!-- Border Color -->
+        <div class="control-group">
+          <label class="ctrl-label">border color 🎨</label>
+          <div class="color-pills" id="colorPills">
+            <button class="pill pill-white active" data-color="white" onclick="selectColor('white', this)">white</button>
+            <button class="pill pill-black" data-color="black" onclick="selectColor('black', this)">black</button>
+            <button class="pill pill-red" data-color="red" onclick="selectColor('red', this)">red</button>
+            <button class="pill pill-blue" data-color="blue" onclick="selectColor('blue', this)">blue</button>
+            <button class="pill pill-green" data-color="green" onclick="selectColor('green', this)">green</button>
+            <button class="pill pill-pink" data-color="pink" onclick="selectColor('pink', this)">pink</button>
+          </div>
+        </div>
+
+        <!-- Border Size -->
+        <div class="control-group">
+          <label class="ctrl-label">border size <span id="sizeVal">10</span>px 📏</label>
+          <input type="range" class="cute-slider" id="borderSize" min="2" max="30" value="10"
+                 oninput="document.getElementById('sizeVal').textContent = this.value" />
+          <div class="slider-hints"><span>thin</span><span>thicc</span></div>
+        </div>
+
+        <!-- Shadow Toggle -->
+        <div class="control-group">
+          <label class="ctrl-label">shadow effect 🌑</label>
+          <div class="toggle-wrap" onclick="toggleShadow()">
+            <div class="toggle-track" id="toggleTrack">
+              <div class="toggle-thumb" id="toggleThumb"></div>
+            </div>
+            <span class="toggle-text" id="toggleText">on ✓</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Create Button -->
+      <button class="btn-create" id="createBtn" onclick="createSticker()">
+        <span class="btn-icon">✨</span>
+        <span class="btn-label">Create Sticker!</span>
+        <span class="btn-icon">🎀</span>
+      </button>
+
+      <!-- Loading State -->
+      <div class="loading-box" id="loadingBox" style="display:none">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">making magic ✨</div>
+      </div>
+
+    </section>
+
+    <!-- Right Panel: Result -->
+    <section class="panel panel-right">
+      <div class="panel-title">
+        <span>your sticker</span> <span>🌈</span>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-art">
+          <span class="ea ea1">🌸</span>
+          <span class="ea ea2">⭐</span>
+          <span class="ea ea3">💖</span>
+          <span class="ea ea4">🌙</span>
+          <span class="ea ea5">✨</span>
+        </div>
+        <div class="empty-text">your sticker will appear here~</div>
+        <div class="empty-sub">upload a photo and hit create! ♡</div>
+      </div>
+
+      <!-- Result State -->
+      <div class="result-state" id="resultState" style="display:none">
+        <div class="result-badge">✨ fresh sticker!</div>
+        <div class="sticker-frame">
+          <img id="resultImg" src="" alt="sticker result" class="result-img" />
+        </div>
+        <div class="result-actions">
+          <a class="btn-download" id="downloadBtn" download="my-sticker.png">
+            <span>💾</span> Download Sticker
+          </a>
+          <button class="btn-again" onclick="resetResult()">
+            <span>🔄</span> Make Another
+          </button>
+        </div>
+        <div class="result-confetti" id="resultConfetti"></div>
+      </div>
+
+      <!-- Error State -->
+      <div class="error-state" id="errorState" style="display:none">
+        <div class="error-icon">😿</div>
+        <div class="error-text">oops! something went wrong~</div>
+        <div class="error-sub" id="errorMsg">please try again!</div>
+        <button class="btn-tiny" onclick="hideError()">try again ♡</button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 🌸 Footer -->
+  <footer class="footer">
+    <span>made with 💖 by Sticker Studio</span>
+    <span class="footer-hearts">♡ ♡ ♡</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

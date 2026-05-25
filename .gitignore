@@ -1,4 +1,7 @@
 venv/
 __pycache__/
-uploads/
-outputs/
+*.pyc
+*.pyo
+.env
+outputs/*.png
+frontend/

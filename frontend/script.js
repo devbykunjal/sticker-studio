@@ -229,6 +229,26 @@ async function createSticker() {
 }
 
 // ============================================
+// DOWNLOAD HELPER
+// ✅ Fetches image as blob so cross-origin download works
+//    (plain <a download> fails for different domains)
+// ============================================
+async function downloadBlob(imageUrl) {
+  try {
+    const res  = await fetch(imageUrl);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = "my-sticker.png";
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    showToast("Download failed, try right-click → Save image 🌸");
+  }
+}
+
+// ============================================
 // SHOW RESULT — image blob (StreamingResponse backend)
 // ============================================
 function showResult(url) {
@@ -238,10 +258,12 @@ function showResult(url) {
   const emptyState  = document.getElementById("emptyState");
 
   state.resultUrl = url;
+  resultImg.src   = url;
 
-  resultImg.src         = url;
-  downloadBtn.href      = url;
-  downloadBtn.download  = "my-sticker.png";
+  // blob URL is same-origin so direct download works
+  downloadBtn.href     = url;
+  downloadBtn.download = "my-sticker.png";
+  downloadBtn.onclick  = null; // clear any previous handler
 
   emptyState.style.display  = "none";
   resultState.style.display = "flex";
@@ -251,8 +273,8 @@ function showResult(url) {
 
 // ============================================
 // SHOW RESULT — JSON backend (file saved on server)
-// ✅ FIX: Always strip whatever domain the backend sends
-//         and replace with the real HF Space BASE_URL
+// ✅ FIX 1: Always use BASE_URL (strips any wrong domain from backend)
+// ✅ FIX 2: Download via blob fetch so cross-origin download works
 // ============================================
 function showResultFromPath(savePath) {
   const resultState = document.getElementById("resultState");
@@ -260,14 +282,19 @@ function showResultFromPath(savePath) {
   const resultImg   = document.getElementById("resultImg");
   const downloadBtn = document.getElementById("downloadBtn");
 
-  // Strip any domain (handles localhost, wrong IP, old URLs, etc.)
-  // and always use the correct HF Space BASE_URL
+  // Strip whatever domain backend sent, always use correct HF Space URL
   const path     = savePath.replace(/^https?:\/\/[^/]+/, "");
   const imageUrl = `${BASE_URL}${path}?t=${Date.now()}`;
 
-  resultImg.src        = imageUrl;
-  downloadBtn.href     = imageUrl;
-  downloadBtn.download = "my-sticker.png";
+  resultImg.src = imageUrl;
+
+  // ✅ Override click to fetch blob first — fixes "opens in new tab" bug
+  downloadBtn.href    = "#";
+  downloadBtn.download = "";
+  downloadBtn.onclick = (e) => {
+    e.preventDefault();
+    downloadBlob(imageUrl);
+  };
 
   emptyState.style.display  = "none";
   resultState.style.display = "flex";

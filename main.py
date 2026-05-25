@@ -5,6 +5,7 @@ from rembg import remove
 from PIL import Image, ImageFilter, ImageChops
 import io
 import os
+import uuid
 
 app = FastAPI()
 
@@ -90,13 +91,14 @@ async def create_sticker(
     # Paste original image on top
     final = Image.alpha_composite(final, padded)
 
-    # Save
-    save_path = "outputs/sticker.png"
+    # Save with unique filename so concurrent users don't overwrite each other
+    filename = f"sticker_{uuid.uuid4().hex}.png"
+    save_path = f"outputs/{filename}"
     final.save(save_path)
 
     return {
         "message": "Sticker created!",
-        "saved_to": f"https://kunjalsaharan25-sticker-studio-api.hf.space/{save_path}"
+        "saved_to": f"https://kunjalsaharan25-sticker-studio-api.hf.space/{save_path}",  # ← comma was missing here
         "border_color": border_color,
         "shadow": shadow_bool,
     }

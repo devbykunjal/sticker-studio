@@ -188,7 +188,7 @@ async function createSticker() {
   formData.append("shadow",       state.shadow ? "true" : "false"); // ✅ explicit string
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/create-sticker", {
+    const response = await fetch("https://kunjalsaharan25-sticker-studio-api.hf.space/create-sticker", {
       method: "POST",
       body: formData,
       // ✅ Do NOT set Content-Type — browser sets multipart boundary automatically
@@ -252,36 +252,26 @@ function showResult(url) {
 //         Added cache-buster so browser doesn't show stale image
 // ============================================
 async function showResultFromPath(savePath) {
+
   const resultState = document.getElementById("resultState");
-  const emptyState  = document.getElementById("emptyState");
-  const resultImg   = document.getElementById("resultImg");
+  const emptyState = document.getElementById("emptyState");
+  const resultImg = document.getElementById("resultImg");
   const downloadBtn = document.getElementById("downloadBtn");
 
-  // ✅ savePath is already full URL — just add cache-buster
-  const staticUrl = `${savePath}?t=${Date.now()}`;
+  // Add cache buster
+  const imageUrl = `${savePath}?t=${Date.now()}`;
 
-  try {
-    const imgResp = await fetch(staticUrl);
-    if (imgResp.ok) {
-      const blob = await imgResp.blob();
-      const url  = URL.createObjectURL(blob);
-      state.resultUrl  = url;
-      resultImg.src    = url;
-      downloadBtn.href = url;
-    } else {
-      // Server responded but image fetch failed — show placeholder
-      resultImg.src    = buildSuccessPlaceholder();
-      downloadBtn.href = staticUrl;
-    }
-  } catch {
-    // Network/CORS issue
-    resultImg.src    = buildSuccessPlaceholder();
-    downloadBtn.href = "#";
-  }
+  // Directly show image
+  resultImg.src = imageUrl;
 
+  // Download button
+  downloadBtn.href = imageUrl;
   downloadBtn.download = "my-sticker.png";
-  emptyState.style.display  = "none";
+
+  // Show result section
+  emptyState.style.display = "none";
   resultState.style.display = "flex";
+
   fireConfetti();
 }
 
@@ -292,7 +282,7 @@ async function showResultFromPath(savePath) {
 function buildSuccessPlaceholder() {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
     <rect width="200" height="200" fill="#fff5f8" rx="20"/>
-    <text x="100" y="90"  text-anchor="middle" font-size="48">🎉</text>
+    <text x="100" y="90"  text-anchor="middle" font-size="48">Sticker Created!</text>
     <text x="100" y="130" text-anchor="middle" font-size="14" fill="#a06080" font-family="Nunito,sans-serif">Sticker saved!</text>
     <text x="100" y="150" text-anchor="middle" font-size="11" fill="#c09ab0" font-family="Nunito,sans-serif">check outputs/sticker.png</text>
   </svg>`;

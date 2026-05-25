@@ -96,7 +96,7 @@ async def create_sticker(
 
     return {
         "message": "Sticker created!",
-        "saved_to": f"http://127.0.0.1:8000/{save_path}",
+        "saved_to": f"https://kunjalsaharan25-sticker-studio-api.hf.space/{save_path}"
         "border_color": border_color,
         "shadow": shadow_bool,
     }

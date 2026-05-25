@@ -4,6 +4,11 @@
    ============================================ */
 
 // ============================================
+// CONFIG
+// ============================================
+const BASE_URL = "https://kunjalsaharan25-sticker-studio-api.hf.space";
+
+// ============================================
 // STATE
 // All UI data lives here — single source of truth
 // ============================================
@@ -180,18 +185,17 @@ async function createSticker() {
   hideResult();
   hideError();
 
-  // ✅ Send shadow as "true"/"false" string — FastAPI reads it as str then converts
   const formData = new FormData();
   formData.append("image",        state.selectedFile);
   formData.append("border_color", state.borderColor);
   formData.append("border_size",  String(state.borderSize));
-  formData.append("shadow",       state.shadow ? "true" : "false"); // ✅ explicit string
+  formData.append("shadow",       state.shadow ? "true" : "false");
 
   try {
-    const response = await fetch("https://kunjalsaharan25-sticker-studio-api.hf.space/create-sticker", {
+    const response = await fetch(`${BASE_URL}/create-sticker`, {
       method: "POST",
       body: formData,
-      // ✅ Do NOT set Content-Type — browser sets multipart boundary automatically
+      // Do NOT set Content-Type — browser sets multipart boundary automatically
     });
 
     if (!response.ok) {
@@ -213,8 +217,7 @@ async function createSticker() {
     } else {
       // Backend returns JSON with saved_to URL
       const data = await response.json();
-      // ✅ data.saved_to is already the full URL e.g. http://127.0.0.1:8000/outputs/sticker.png
-      await showResultFromPath(data.saved_to);
+      showResultFromPath(data.saved_to);
     }
 
   } catch (err) {
@@ -248,45 +251,28 @@ function showResult(url) {
 
 // ============================================
 // SHOW RESULT — JSON backend (file saved on server)
-// ✅ FIX: savePath is already a full URL from backend
-//         Added cache-buster so browser doesn't show stale image
+// ✅ FIX: Always strip whatever domain the backend sends
+//         and replace with the real HF Space BASE_URL
 // ============================================
-async function showResultFromPath(savePath) {
-
+function showResultFromPath(savePath) {
   const resultState = document.getElementById("resultState");
-  const emptyState = document.getElementById("emptyState");
-  const resultImg = document.getElementById("resultImg");
+  const emptyState  = document.getElementById("emptyState");
+  const resultImg   = document.getElementById("resultImg");
   const downloadBtn = document.getElementById("downloadBtn");
 
-  // Add cache buster
-  const imageUrl = `${savePath}?t=${Date.now()}`;
+  // Strip any domain (handles localhost, wrong IP, old URLs, etc.)
+  // and always use the correct HF Space BASE_URL
+  const path     = savePath.replace(/^https?:\/\/[^/]+/, "");
+  const imageUrl = `${BASE_URL}${path}?t=${Date.now()}`;
 
-  // Directly show image
-  resultImg.src = imageUrl;
-
-  // Download button
-  downloadBtn.href = imageUrl;
+  resultImg.src        = imageUrl;
+  downloadBtn.href     = imageUrl;
   downloadBtn.download = "my-sticker.png";
 
-  // Show result section
-  emptyState.style.display = "none";
+  emptyState.style.display  = "none";
   resultState.style.display = "flex";
 
   fireConfetti();
-}
-
-// ============================================
-// BUILD SUCCESS PLACEHOLDER
-// Shown when the sticker image can't be fetched back
-// ============================================
-function buildSuccessPlaceholder() {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-    <rect width="200" height="200" fill="#fff5f8" rx="20"/>
-    <text x="100" y="90"  text-anchor="middle" font-size="48">Sticker Created!</text>
-    <text x="100" y="130" text-anchor="middle" font-size="14" fill="#a06080" font-family="Nunito,sans-serif">Sticker saved!</text>
-    <text x="100" y="150" text-anchor="middle" font-size="11" fill="#c09ab0" font-family="Nunito,sans-serif">check outputs/sticker.png</text>
-  </svg>`;
-  return `data:image/svg+xml;base64,${btoa(svg)}`;
 }
 
 // ============================================
